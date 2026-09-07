@@ -80,7 +80,7 @@ Type: `object`
 
 ```js
 {
-  compareFunction: <Func> // defaults to lodash's isEqual; must accept two parameters (o1, o2)
+  compareFunction: <Func> // defaults to Lodash equality with corrected collection handling; must accept two parameters (o1, o2)
   updatedValues: <Number> // controls what gets returned in the "updated" results array:
                           // diff.updatedValues.first (1): the value from the first array
                           // diff.updatedValues.second (2): the value from the second array (default)
@@ -122,12 +122,17 @@ conversion, so `1` and `'1'` identify the same record. Reserved strings such as
 `'constructor'` and `'__proto__'` are valid IDs. Missing and duplicate IDs are not
 validated; duplicate IDs in the first array use its last record for matching.
 
-The default comparator is Lodash `isEqual`. Detailed changes support ordinary
+The default comparator uses Lodash equality with corrected Map and Set handling.
+Collection insertion order is ignored, while Map key/value associations and
+array order inside collections are preserved. Detailed changes support ordinary
 objects with enumerable string keys, arrays, dates, regular expressions, and
 primitive values. Changed Maps and Sets are reported as whole-value edits,
 including when nested, so their native types survive applying or reverting a
-change. Symbol-keyed properties and other specialized objects are outside the
-documented detailed-change contract. Custom comparators can produce an updated
+change. Root Maps and Sets are updated in place when both values have the same
+collection type; their change records retain shallow snapshots of the entries
+for undo. Root edits that cannot be applied in place throw an error; wrap such
+values in an object property to allow replacement. Symbol-keyed properties and
+other specialized objects are outside the documented detailed-change contract. Custom comparators can produce an updated
 pair with an empty change list even when both values are structurally identical.
 
 Regular-expression edits retain the original `RegExp` values in `lhs` and `rhs`
@@ -198,19 +203,24 @@ Fixtures contain 100 and 1,000 entries per object, each with strings, numbers,
 booleans, bigints, null, undefined, NaN, infinity, symbol values, shared functions,
 dates, regular expressions, Maps, Sets, arrays, and nested objects. Cases cover
 equal inputs, sparse (1%) and dense (100%) updates, array classification, and
-order-independent comparisons. Separate depths of 5, 10, 15, and 18 expose the
-known nested-array performance regression.
+order-independent comparisons. Separate depths of 5, 10, 15, and 18 measure
+nested-array traversal costs.
 
 Fixture creation is outside measured operations. The mutating order-independent
 case receives fresh reversed inputs before every iteration. Benchmarks warm up
 before sampling; results depend on hardware and system load, so compare runs on
 the same machine. Timing thresholds do not gate `npm test`.
 
+Order-independent comparison aligns matching array entries in place. Filters and
+normalizers participate in matching; when supplied, candidate matching uses them
+instead of raw-value hashes. These callbacks should be pure because they may
+run for several candidate pairs.
+
 The unit suite checks large mixed objects, exact change counts, classification,
-and apply/revert round trips. Three `it.fails` cases document the known collection
-equality and exponential-traversal bugs; remove their expected-failure markers
-when fixing those bugs. The traversal regression counts property reads instead
-of relying on wall-clock timing.
+and apply/revert round trips. Regression tests cover collection equality, root
+collection patches, and order-independent filtering and normalization. Traversal
+regressions count property reads instead of relying on wall-clock timing. All
+test files are included in TypeScript checking.
 
 ## License
 

@@ -1,5 +1,5 @@
 import isArray from 'lodash/isArray.js';
-import isEqual from 'lodash/isEqual.js';
+import { isEqual } from './equality.js';
 import isFunction from 'lodash/isFunction.js';
 import isObject from 'lodash/isObject.js';
 import isString from 'lodash/isString.js';

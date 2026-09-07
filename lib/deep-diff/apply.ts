@@ -35,6 +35,20 @@ function assertSafeKey (key: PathSegment): void {
   }
 }
 
+function replaceRoot (target: Container, value: unknown): void {
+  if (target instanceof Map && value instanceof Map) {
+    const entries = [...value];
+    target.clear();
+    for (const [key, item] of entries) target.set(key, item);
+  } else if (target instanceof Set && value instanceof Set) {
+    const entries = [...value];
+    target.clear();
+    for (const item of entries) target.add(item);
+  } else {
+    throw new TypeError('Cannot replace this root value in place; wrap it in an object property');
+  }
+}
+
 function descend (
   root: Container,
   path: readonly PathSegment[],
@@ -109,6 +123,10 @@ export function applyChange (
   if (!isContainer(target) || !change) return;
 
   const path = change.path ?? [];
+  if (path.length === 0 && change.kind === 'E') {
+    replaceRoot(target, change.rhs);
+    return;
+  }
   const parent = descend(target, path.slice(0, -1), true);
   if (!parent) return;
   const key = path[path.length - 1];
@@ -170,6 +188,10 @@ export function revertChange (
   const change = resolveChange(suppliedChange);
   if (!source || !isContainer(target) || !change) return;
   const path = change.path ?? [];
+  if (path.length === 0 && change.kind === 'E') {
+    replaceRoot(target, change.lhs);
+    return;
+  }
   const parent = descend(target, path.slice(0, -1), true);
   const key = path[path.length - 1];
   if (!parent) return;

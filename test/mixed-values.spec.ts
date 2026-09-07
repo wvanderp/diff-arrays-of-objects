@@ -68,8 +68,8 @@ describe('large objects containing mixed value types', () => {
   });
 });
 
-describe('known review regressions (expected failures until fixed)', () => {
-  it.fails('distinguishes Map keys from their values', () => {
+describe('review regressions', () => {
+  it('distinguishes Map keys from their values', () => {
     const lhs = new Map([['a', 'b']]);
     const rhs = new Map([['b', 'a']]);
     expect(deep({ value: lhs }, { value: rhs })).toEqual([
@@ -77,7 +77,7 @@ describe('known review regressions (expected failures until fixed)', () => {
     ]);
   });
 
-  it.fails('preserves array order inside Sets during ordinary comparison', () => {
+  it('preserves array order inside Sets during ordinary comparison', () => {
     const lhs = new Set([[1, 2]]);
     const rhs = new Set([[2, 1]]);
     expect(deep({ value: lhs }, { value: rhs })).toEqual([
@@ -85,7 +85,7 @@ describe('known review regressions (expected failures until fixed)', () => {
     ]);
   });
 
-  it.fails('avoids exponential traversal of nested singleton arrays', () => {
+  it('avoids exponential traversal of nested singleton arrays', () => {
     const countReads = (depth: number): number => {
       let reads = 0;
       let lhs: unknown = { get value () { reads++; return 1; } };

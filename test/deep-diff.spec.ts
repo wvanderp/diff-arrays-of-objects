@@ -1,8 +1,7 @@
-import deepDiff from '../lib/deep-diff/index.js';
+import deep from '../lib/deep-diff/index.js';
+import type { PreFilterFunction } from '../lib/deep-diff/calculate.js';
 import { describe, expect, it } from 'vitest';
 
-
-let deep = deepDiff;
 
   describe('deep-diff', function () {
     const empty = {};
@@ -43,9 +42,9 @@ let deep = deepDiff;
             it(`shows differences when comparing ${JSON.stringify(lhsTuple[0])} to ${JSON.stringify(rhsTuple[0])}`, function () {
               const diff = deep.diff(lhsTuple[1], rhsTuple[1]);
               expect(diff).toBeTruthy();
-              expect(diff.length).toBe(1);
-              expect(diff[0]).toHaveProperty('kind');
-              expect(diff[0].kind).toBe('E');
+              expect(diff?.length).toBe(1);
+              expect(diff?.[0]).toHaveProperty('kind');
+              expect(diff?.[0]?.kind).toBe('E');
             });
           });
         });
@@ -60,23 +59,23 @@ let deep = deepDiff;
 
         it('the differences are reported', function () {
           expect(diff).toBeTruthy();
-          expect(diff.length).toBe(2);
+          expect(diff?.length).toBe(2);
 
-          expect(diff[0]).toHaveProperty('kind');
-          expect(diff[0].kind).toBe('N');
-          expect(diff[0]).toHaveProperty('path');
-          expect(diff[0].path).toBeInstanceOf(Array);
-          expect(diff[0].path[0]).toEqual('other');
-          expect(diff[0]).toHaveProperty('rhs');
-          expect(diff[0].rhs).toBe('property');
+          expect(diff?.[0]).toHaveProperty('kind');
+          expect(diff?.[0]?.kind).toBe('N');
+          expect(diff?.[0]).toHaveProperty('path');
+          expect(diff?.[0]?.path).toBeInstanceOf(Array);
+          expect(diff?.[0]?.path?.[0]).toEqual('other');
+          expect(diff?.[0]).toHaveProperty('rhs');
+          expect(diff?.[0]).toHaveProperty('rhs', 'property');
 
-          expect(diff[1]).toHaveProperty('kind');
-          expect(diff[1].kind).toBe('N');
-          expect(diff[1]).toHaveProperty('path');
-          expect(diff[1].path).toBeInstanceOf(Array);
-          expect(diff[1].path[0]).toEqual('another');
-          expect(diff[1]).toHaveProperty('rhs');
-          expect(diff[1].rhs).toBe(13.13);
+          expect(diff?.[1]).toHaveProperty('kind');
+          expect(diff?.[1]?.kind).toBe('N');
+          expect(diff?.[1]).toHaveProperty('path');
+          expect(diff?.[1]?.path).toBeInstanceOf(Array);
+          expect(diff?.[1]?.path?.[0]).toEqual('another');
+          expect(diff?.[1]).toHaveProperty('rhs');
+          expect(diff?.[1]).toHaveProperty('rhs', 13.13);
         });
 
       });
@@ -95,9 +94,9 @@ let deep = deepDiff;
       it('shows the property as removed when compared to an empty object', function () {
         const diff = deep.diff(lhs, empty);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('D');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('D');
       });
 
       it('shows the property as edited when compared to an object with null', function () {
@@ -105,23 +104,23 @@ let deep = deepDiff;
           one: null,
         });
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
       it('shows the property as edited when compared to an array', function () {
         const diff = deep.diff(lhs, ['one']);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
     });
 
     describe('A target that has null value', function () {
-      const lhs = {
+      const lhs: { key: null | { nested: string } } = {
         key: null,
       };
 
@@ -132,9 +131,9 @@ let deep = deepDiff;
       it('shows the property as removed when compared to an empty object', function () {
         const diff = deep.diff(lhs, empty);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('D');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('D');
       });
 
       it('shows the property is changed when compared to an object that has value', function () {
@@ -142,9 +141,9 @@ let deep = deepDiff;
           key: 'value',
         });
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
       it('shows that an object property is changed when it is set to null', function () {
@@ -155,9 +154,9 @@ let deep = deepDiff;
           key: null,
         });
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
     });
@@ -173,9 +172,9 @@ let deep = deepDiff;
           key: new Date(777777777777),
         });
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
     });
@@ -191,9 +190,9 @@ let deep = deepDiff;
           key: 0,
         });
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(1);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('E');
+        expect(diff?.length).toBe(1);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('E');
       });
 
       it('shows no differences when compared to another NaN', function () {
@@ -203,27 +202,6 @@ let deep = deepDiff;
         expect(diff).toBeUndefined();
       });
 
-    });
-
-
-    describe('can revert namespace using noConflict', function () {
-      if (!deep.noConflict) {
-        it.skip('is unavailable in the vendored module build', function () {});
-        return;
-      }
-
-      deep = deep.noConflict();
-
-      it('conflict is restored (when applicable)', function () {
-        // In node there is no global conflict.
-        if (typeof globalConflict !== 'undefined') {
-          expect(DeepDiff).toBe(deep);
-        }
-      });
-
-      it('DeepDiff functionality available through result of noConflict()', function () {
-        expect(deep.applyDiff).toBeTypeOf('function');
-      });
     });
 
 
@@ -252,16 +230,16 @@ let deep = deepDiff;
       describe('if the filtered property is an array', function () {
 
         it('changes to the array do not appear as a difference', function () {
-          const prefilter = function (path, key) {
+          const prefilter: PreFilterFunction = function (_path, key) {
             return key === 'supportedBy';
           };
           const diff = deep(lhs, rhs, prefilter);
           expect(diff).toBeTruthy();
-          expect(diff.length).toBe(2);
-          expect(diff[0]).toHaveProperty('kind');
-          expect(diff[0].kind).toBe('E');
-          expect(diff[1]).toHaveProperty('kind');
-          expect(diff[1].kind).toBe('N');
+          expect(diff?.length).toBe(2);
+          expect(diff?.[0]).toHaveProperty('kind');
+          expect(diff?.[0]?.kind).toBe('E');
+          expect(diff?.[1]).toHaveProperty('kind');
+          expect(diff?.[1]?.kind).toBe('N');
         });
 
       });
@@ -269,20 +247,20 @@ let deep = deepDiff;
       describe('if the filtered property is not an array', function () {
 
         it('changes do not appear as a difference', function () {
-          const prefilter = function (path, key) {
+          const prefilter: PreFilterFunction = function (_path, key) {
             return key === 'fixedBy';
           };
           const diff = deep(lhs, rhs, prefilter);
           expect(diff).toBeTruthy();
-          expect(diff.length).toBe(4);
-          expect(diff[0]).toHaveProperty('kind');
-          expect(diff[0].kind).toBe('A');
-          expect(diff[1]).toHaveProperty('kind');
-          expect(diff[1].kind).toBe('A');
-          expect(diff[2]).toHaveProperty('kind');
-          expect(diff[2].kind).toBe('A');
-          expect(diff[3]).toHaveProperty('kind');
-          expect(diff[3].kind).toBe('E');
+          expect(diff?.length).toBe(4);
+          expect(diff?.[0]).toHaveProperty('kind');
+          expect(diff?.[0]?.kind).toBe('A');
+          expect(diff?.[1]).toHaveProperty('kind');
+          expect(diff?.[1]?.kind).toBe('A');
+          expect(diff?.[2]).toHaveProperty('kind');
+          expect(diff?.[2]?.kind).toBe('A');
+          expect(diff?.[3]).toHaveProperty('kind');
+          expect(diff?.[3]?.kind).toBe('E');
         });
 
       });
@@ -317,60 +295,60 @@ let deep = deepDiff;
       it('shows the property as removed when compared to an empty object', function () {
         const diff = deep(nestedOne, empty);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(3);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('D');
-        expect(diff[1]).toHaveProperty('kind');
-        expect(diff[1].kind).toBe('D');
+        expect(diff?.length).toBe(3);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('D');
+        expect(diff?.[1]).toHaveProperty('kind');
+        expect(diff?.[1]?.kind).toBe('D');
       });
 
       it('shows the property is changed when compared to an object that has value', function () {
         const diff = deep.diff(nestedOne, nestedTwo);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(3);
+        expect(diff?.length).toBe(3);
       });
 
       it('shows the property as added when compared to an empty object on left', function () {
         const diff = deep.diff(empty, nestedOne);
         expect(diff).toBeTruthy();
-        expect(diff.length).toBe(3);
-        expect(diff[0]).toHaveProperty('kind');
-        expect(diff[0].kind).toBe('N');
+        expect(diff?.length).toBe(3);
+        expect(diff?.[0]).toHaveProperty('kind');
+        expect(diff?.[0]?.kind).toBe('N');
       });
 
       describe('when diff is applied to a different empty object', function () {
         const diff = deep.diff(nestedOne, nestedTwo);
 
         it('has result with nested values', function () {
-          const result = {};
+          const result: Partial<typeof nestedTwo> = {};
 
-          deep.applyChange(result, nestedTwo, diff[0]);
+          deep.applyChange(result, nestedTwo, diff?.[0]);
           expect(result.levelOne).toBeTruthy();
           expect(result.levelOne).toBeTypeOf('object');
-          expect(result.levelOne.levelTwo).toBeTruthy();
-          expect(result.levelOne.levelTwo).toEqual('another value');
+          expect(result.levelOne?.levelTwo).toBeTruthy();
+          expect(result.levelOne?.levelTwo).toEqual('another value');
         });
 
         it('has result with array object values', function () {
-          const result = {};
+          const result: Partial<typeof nestedTwo> = {};
 
-          deep.applyChange(result, nestedTwo, diff[2]);
+          deep.applyChange(result, nestedTwo, diff?.[2]);
           expect(result.arrayOne).toBeTruthy();
           expect(result.arrayOne).toBeInstanceOf(Array);
-          expect(result.arrayOne[0]).toBeTruthy();
-          expect(result.arrayOne[0].objValue).toBeTruthy();
-          expect(result.arrayOne[0].objValue).toBe('new value');
+          expect(result.arrayOne?.[0]).toBeTruthy();
+          expect(result.arrayOne?.[0]?.objValue).toBeTruthy();
+          expect(result.arrayOne?.[0]?.objValue).toBe('new value');
         });
 
         it('has result with added array objects', function () {
-          const result = {};
+          const result: Partial<typeof nestedTwo> = {};
 
-          deep.applyChange(result, nestedTwo, diff[1]);
+          deep.applyChange(result, nestedTwo, diff?.[1]);
           expect(result.arrayOne).toBeTruthy();
           expect(result.arrayOne).toBeInstanceOf(Array);
-          expect(result.arrayOne[1]).toBeTruthy();
-          expect(result.arrayOne[1].objValue).toBeTruthy();
-          expect(result.arrayOne[1].objValue).toBe('more value');
+          expect(result.arrayOne?.[1]).toBeTruthy();
+          expect(result.arrayOne?.[1]?.objValue).toBeTruthy();
+          expect(result.arrayOne?.[1]?.objValue).toBe('more value');
         });
       });
     });
@@ -415,7 +393,7 @@ let deep = deepDiff;
 
         // there should be differences
         expect(diff).toBeDefined();
-        expect(diff.length).toBe(6);
+        expect(diff?.length).toBe(6);
 
         it('differences can be applied', function () {
           deep.applyDiff(lhs, rhs);
@@ -432,30 +410,11 @@ let deep = deepDiff;
       it('can apply diffs between two top level arrays', function () {
         const differences = deep.diff(lhs, rhs);
 
-        differences.forEach(function (difference) {
+        differences?.forEach(function (difference) {
           deep.applyChange(lhs, true, difference);
         });
 
         expect(lhs).toEqual(['a']);
-      });
-    });
-
-    describe('Objects from different frames', function () {
-      if (typeof globalConflict === 'undefined') {
-        it.skip('requires a browser frame', function () {});
-        return;
-      }
-
-      const frame = document.createElement('iframe');
-      document.body.appendChild(frame);
-
-      const lhs = new frame.contentWindow.Date(2010, 1, 1);
-      const rhs = new frame.contentWindow.Date(2010, 1, 1);
-
-      it('can compare date instances from a different frame', function () {
-        const differences = deep.diff(lhs, rhs);
-
-        expect(differences).toBeUndefined();
       });
     });
 
@@ -466,12 +425,12 @@ let deep = deepDiff;
       it('can compare regex instances', function () {
         const diff = deep.diff(lhs, rhs);
 
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
 
-        expect(diff[0].kind).toBe('E');
-        expect(diff[0].path).toBeFalsy();
-        expect(diff[0].lhs).toBe(lhs);
-        expect(diff[0].rhs).toBe(rhs);
+        expect(diff?.[0]?.kind).toBe('E');
+        expect(diff?.[0]?.path).toBeFalsy();
+        expect(diff?.[0]).toHaveProperty('lhs', lhs);
+        expect(diff?.[0]).toHaveProperty('rhs', rhs);
       });
     });
 
@@ -490,7 +449,7 @@ let deep = deepDiff;
       it('should not throw a TypeError', function () {
         const diff = deep.diff(lhs, rhs);
 
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
       });
     });
 
@@ -513,13 +472,13 @@ let deep = deepDiff;
         const diff = deep.diff({ foo: undefined }, {});
 
         expect(diff).toBeInstanceOf(Array);
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
 
-        expect(diff[0].kind).toBe('D');
-        expect(diff[0].path).toBeInstanceOf(Array);
-        expect(diff[0].path).toHaveLength(1);
-        expect(diff[0].path[0]).toBe('foo');
-        expect(diff[0].lhs).toBeUndefined();
+        expect(diff?.[0]?.kind).toBe('D');
+        expect(diff?.[0]?.path).toBeInstanceOf(Array);
+        expect(diff?.[0]?.path).toHaveLength(1);
+        expect(diff?.[0]?.path?.[0]).toBe('foo');
+        expect(diff?.[0]).toHaveProperty('lhs', undefined);
 
       });
 
@@ -527,13 +486,13 @@ let deep = deepDiff;
         const diff = deep.diff({}, { foo: undefined });
 
         expect(diff).toBeInstanceOf(Array);
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
 
-        expect(diff[0].kind).toBe('N');
-        expect(diff[0].path).toBeInstanceOf(Array);
-        expect(diff[0].path).toHaveLength(1);
-        expect(diff[0].path[0]).toBe('foo');
-        expect(diff[0].rhs).toBeUndefined();
+        expect(diff?.[0]?.kind).toBe('N');
+        expect(diff?.[0]?.path).toBeInstanceOf(Array);
+        expect(diff?.[0]?.path).toHaveLength(1);
+        expect(diff?.[0]?.path?.[0]).toBe('foo');
+        expect(diff?.[0]).toHaveProperty('rhs', undefined);
 
       });
     });
@@ -556,10 +515,10 @@ let deep = deepDiff;
         const diff = deep.diff(null, undefined);
 
         expect(diff).toBeInstanceOf(Array);
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
 
-        expect(diff[0].kind).toBe('D');
-        expect(diff[0].lhs).toBeNull();
+        expect(diff?.[0]?.kind).toBe('D');
+        expect(diff?.[0]).toHaveProperty('lhs', null);
 
       });
 
@@ -568,19 +527,19 @@ let deep = deepDiff;
         const diff = deep.diff(Object.create(null), { foo: undefined });
 
         expect(diff).toBeInstanceOf(Array);
-        expect(diff.length).toBe(1);
+        expect(diff?.length).toBe(1);
 
-        expect(diff[0].kind).toBe('N');
-        expect(diff[0].rhs).toBeUndefined();
+        expect(diff?.[0]?.kind).toBe('N');
+        expect(diff?.[0]).toHaveProperty('rhs', undefined);
       });
     });
 
     describe('Order independent hash testing', function () {
-      function sameHash (a, b) {
+      function sameHash (a: unknown, b: unknown) {
         expect(deep.orderIndepHash(a)).toBe(deep.orderIndepHash(b));
       }
 
-      function differentHash (a, b) {
+      function differentHash (a: unknown, b: unknown) {
         expect(deep.orderIndepHash(a)).not.toBe(deep.orderIndepHash(b));
       }
 
@@ -743,7 +702,7 @@ let deep = deepDiff;
         const rhs = [2, 2, 3];
 
         const diff = deep.orderIndependentDiff(lhs, rhs);
-        expect(diff.length).toBeTruthy();
+        expect(diff?.length).toBeTruthy();
       });
 
 

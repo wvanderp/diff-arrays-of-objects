@@ -1,4 +1,4 @@
-import isEqual from 'lodash/isEqual.js';
+import { isEqual } from '../equality.js';
 import { Diff, DiffArray, DiffDeleted, DiffEdit, DiffNew, PathSegment } from './changes.js';
 import { getOrderIndependentHash } from './hash.js';
 import { realTypeOf } from './utils.js';
@@ -65,24 +65,30 @@ function compareArrays (
   rhs: unknown[],
   options: WalkOptions,
 ): void {
-  if (options.orderIndependent) {
-    lhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
-    rhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+  const matched = new Set<number>();
+  // Singleton arrays have no ordering to resolve. Walking them only once also
+  // avoids doubling the work at every level of a deeply nested array.
+  if (options.orderIndependent && (lhs.length > 1 || rhs.length > 1)) {
+    if (!options.prefilter) {
+      lhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+      rhs.sort((a, b) => getOrderIndependentHash(a) - getOrderIndependentHash(b));
+    }
 
     // Hashes only group candidates: distinct values can share a hash. Align
     // equal values within each group before comparing them by array index.
     for (let index = 0; index < Math.min(lhs.length, rhs.length); index++) {
-      const hash = getOrderIndependentHash(lhs[index]);
+      // Raw hashes cannot rule out equality under a filter or normalizer.
+      const hash = options.prefilter ? undefined : getOrderIndependentHash(lhs[index]);
       for (let candidate = index; candidate < rhs.length
-        && getOrderIndependentHash(rhs[candidate]) === hash; candidate++) {
+        && (options.prefilter || getOrderIndependentHash(rhs[candidate]) === hash); candidate++) {
         const changes: Diff[] = [];
         walk(lhs[index], rhs[candidate], {
           ...options,
           changes,
-          prefilter: undefined,
         }, index);
         if (changes.length === 0) {
           [rhs[index], rhs[candidate]] = [rhs[candidate], rhs[index]];
+          matched.add(index);
           break;
         }
       }
@@ -106,10 +112,12 @@ function compareArrays (
     ));
   }
   for (; rightIndex >= 0; rightIndex--) {
-    walk(lhs[rightIndex], rhs[rightIndex], {
-      ...options,
-      path: [...options.path],
-    }, rightIndex);
+    if (!matched.has(rightIndex)) {
+      walk(lhs[rightIndex], rhs[rightIndex], {
+        ...options,
+        path: [...options.path],
+      }, rightIndex);
+    }
   }
 }
 
@@ -192,7 +200,14 @@ function walk (
   if (lhs instanceof Map || rhs instanceof Map
     || lhs instanceof Set || rhs instanceof Set) {
     if (!isEqual(lhs, rhs)) {
-      options.changes.push(new DiffEdit(currentPath, lhs, rhs));
+      // Root collections are patched in place, so retain their entries for undo.
+      const snapshot = (value: unknown): unknown => value instanceof Map
+        ? new Map(value)
+        : value instanceof Set ? new Set(value) : value;
+      options.changes.push(new DiffEdit(currentPath,
+        currentPath.length ? lhs : snapshot(lhs),
+        currentPath.length ? rhs : snapshot(rhs),
+      ));
     }
     return;
   }
