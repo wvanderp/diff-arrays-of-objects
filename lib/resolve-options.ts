@@ -1,8 +1,4 @@
-import isArray from 'lodash/isArray.js';
 import { isEqual } from './equality.js';
-import isFunction from 'lodash/isFunction.js';
-import isObject from 'lodash/isObject.js';
-import isString from 'lodash/isString.js';
 
 /** Controls which values are returned for updated records. */
 export enum UpdatedValues {
@@ -56,16 +52,16 @@ export function resolveOptions<T, Mode extends UpdatedValues> (
   idField: unknown,
   options: unknown,
 ): ResolvedOptions<T, Mode> {
-  if (!isArray(first)) {
+  if (!Array.isArray(first)) {
     fail('"first" parameter must be an array but is not');
   }
-  if (!isArray(second)) {
+  if (!Array.isArray(second)) {
     fail('"second" parameter must be an array but is not');
   }
-  if (!isString(idField)) {
+  if (typeof idField !== 'string' && Object.prototype.toString.call(idField) !== '[object String]') {
     fail('"idField" parameter must be a string but is not');
   }
-  if (!isObject(options)) {
+  if (options === null || (typeof options !== 'object' && typeof options !== 'function')) {
     fail('"options" parameter must be an object but is not');
   }
 
@@ -78,7 +74,7 @@ export function resolveOptions<T, Mode extends UpdatedValues> (
   if (typeof opts.updatedValues !== 'number' || !updatedValuesSet.has(opts.updatedValues)) {
     fail('"options.updatedValues" must be a one of the ".updatedValues" but is not');
   }
-  if (!isFunction(opts.compareFunction)) {
+  if (typeof opts.compareFunction !== 'function') {
     fail('"options.compareFunction" must be a function but is not');
   }
 

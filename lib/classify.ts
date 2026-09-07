@@ -1,4 +1,3 @@
-import groupBy from 'lodash/groupBy.js';
 import { getId } from './identity.js';
 
 export interface Classification<T> {
@@ -17,17 +16,14 @@ export function classify<T extends object> (
   idField: string,
   compareFunction: (a: T, b: T) => boolean,
 ): Classification<T> {
-  const groupingFunction = (o2: T): string => {
+  const groupingFunction = (o2: T): keyof Classification<T> => {
     const o1 = firstIndex[String(getId(idField)(o2))];
     if (o1 === undefined) return 'added';
     if (compareFunction(o1, o2)) return 'same';
     return 'updated';
   };
 
-  return {
-    added: [],
-    same: [],
-    updated: [],
-    ...groupBy(second, groupingFunction),
-  };
+  const result: Classification<T> = { added: [], same: [], updated: [] };
+  for (const item of second) result[groupingFunction(item)].push(item);
+  return result;
 }
